@@ -15,3 +15,9 @@ Weights for the MechGPT-13b-v106C model: https://www.dropbox.com/scl/fi/3q9w685u
 Associated dataset: https://www.dropbox.com/scl/fi/jwe8t6mv5s99kul2bjtl9/QA_dataset_mechanics.csv?rlkey=acy491zfwsvu5bdexf4w4gaub&dl=0 
 
 Various codes are included as Jupyter notebooks.
+
+Install PyTorch and other associated packages. Additional packages needed can be installed as follows:
+
+```
+pip install -U transformers peft bitsandbytes gradio 
+```
