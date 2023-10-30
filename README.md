@@ -19,5 +19,5 @@ Various codes are included as Jupyter notebooks.
 Install PyTorch and other associated packages. Additional packages needed can be installed as follows:
 
 ```
-pip install -U transformers peft bitsandbytes gradio 
+pip install -U transformers peft bitsandbytes gradio pymed scholarly
 ```
