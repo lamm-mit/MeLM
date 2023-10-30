@@ -21,3 +21,99 @@ Install PyTorch and other associated packages. Additional packages needed can be
 ```
 pip install -U transformers peft bitsandbytes gradio pymed scholarly
 ```
+
+To load the model:
+
+```
+bnb_config4bit = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16,
+)
+
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+model_base = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    device_map="auto",
+    quantization_config= bnb_config4bit,
+    torch_dtype=torch.bfloat16,
+    trust_remote_code=True,
+)
+
+model = PeftModel.from_pretrained(model_base, peft_model_id,
+                                )
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+tokenizer.pad_token = tokenizer.eos_token
+tokenizer.padding_side = "right"
+```
+Generation:
+```
+outputs = model.generate(input_ids=inputs.to(device), 
+                                   max_new_tokens=max_new_tokens,
+                                   temperature=0.4, 
+                                   num_beams=1,
+                                   top_k = 50,
+                                   top_p = 0.9,
+                                   num_return_sequences = 1, eos_token_id=[2, 32000],
+                                   do_sample =True,
+                                   repetition_penalty=repetition_penalty,
+                                  )
+tokenizer.batch_decode(outputs[:,inputs.shape[1]:].detach().cpu().numpy(), skip_special_tokens=True)
+```
+
+# Training
+
+The dataset used for training is provided in 'text_list' is a list of text used for training, here: Question-answer pairs formatted in relevant prompt format.
+
+Prompt format:
+```
+User: [Question]<|end_of_turn|>Assistant: [Answer]<|end_of_turn|>
+```
+Training code: 
+```
+from transformers import TrainingArguments, DataCollatorForSeq2Seq
+
+train_dataset = Dataset( text_list )
+
+output_dir = output_dir
+per_device_train_batch_size = batch_size
+gradient_accumulation_steps = gradient_accumulation_steps
+optim = "paged_adamw_32bit"
+save_steps = steps_per_epoch 
+logging_steps = steps_per_epoch
+learning_rate = learning_rate
+max_grad_norm = 0.3
+max_steps = total_steps
+ 
+lr_scheduler_type = "cosine"
+
+training_arguments = TrainingArguments(
+    output_dir=output_dir,
+    per_device_train_batch_size=per_device_train_batch_size,
+    gradient_accumulation_steps=gradient_accumulation_steps,
+    optim=optim,
+    save_steps=save_steps,
+    logging_steps=logging_steps,
+    learning_rate=learning_rate,
+    #fp16=True,
+    bf16=True,  
+    max_grad_norm=max_grad_norm,
+    max_steps=max_steps,
+    warmup_ratio=0.03,
+    lr_scheduler_type=lr_scheduler_type,
+    save_total_limit=20,
+    report_to= "none", #change if you want to use wandb
+)
+
+trainer = Trainer(
+        model=model,
+        train_dataset=train_dataset,
+        args=training_arguments,
+        data_collator= DataCollatorForSeq2Seq(    tokenizer, return_tensors="pt", padding=True),
+        #callbacks=[push_callback],
+    )
+
+trainer.train()
+```
