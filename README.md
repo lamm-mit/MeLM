@@ -12,6 +12,6 @@ This repository also features codes for the multi-modal mechanics language model
 
 Weights for the MechGPT-13b-v106C model: https://www.dropbox.com/scl/fi/3q9w685uvcdjh7qfdo9fg/MechGPT-13b_v106C.zip?rlkey=igjmux7waxllb9i2vgvjh7ez7&dl=0 
 
-Dataset: 
+Associated dataset: https://www.dropbox.com/scl/fi/jwe8t6mv5s99kul2bjtl9/QA_dataset_mechanics.csv?rlkey=acy491zfwsvu5bdexf4w4gaub&dl=0 
 
 Various codes are included as Jupyter notebooks.
